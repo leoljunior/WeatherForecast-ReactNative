@@ -12,11 +12,17 @@ function Routes(){
             <Drawer.Screen
                 name="Home"
                 component={Home}
+                options={{
+                    title: 'My City'
+                }}
             />
 
             <Drawer.Screen
                 name="Search"
                 component={Search}
+                options={{
+                    title: 'Search'
+                }}
             />
         </Drawer.Navigator>
     )
