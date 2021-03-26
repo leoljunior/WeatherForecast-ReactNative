@@ -10,7 +10,7 @@ export default function Header(){
         style={styles.header}
         colors={['#1ed6ff', '#97c1ff']}
         >
-            <Text style={styles.date}>Leonardo</Text>
+            <Text style={styles.date}>Previsão do Tempo</Text>
             <Text style={styles.city}>Pouso Alegre</Text>
 
             <Ionicons
