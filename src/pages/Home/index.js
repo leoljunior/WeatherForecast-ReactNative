@@ -1,109 +1,83 @@
-import React from 'react';
-import { SafeAreaView, Text, StyleSheet, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, Text, StyleSheet, FlatList, View } from 'react-native';
+import * as Location from 'expo-location';
 
 import Menu from '../../components/Menu';
 import Header from '../../components/Header';
 import Conditions from '../../components/Conditions';
 import Forecast from '../../components/Forecast';
 
-const mylist = [
-  {
-    "date": "25/03",
-    "weekday": "Qui",
-    "max": 26,
-    "min": 19,
-    "description": "Tempestades",
-    "condition": "clear_day"
-  },
-  {
-    "date": "26/03",
-    "weekday": "Sex",
-    "max": 28,
-    "min": 18,
-    "description": "Tempestades",
-    "condition": "storm"
-  },
-  {
-    "date": "27/03",
-    "weekday": "Sáb",
-    "max": 30,
-    "min": 18,
-    "description": "Parcialmente nublado",
-    "condition": "cloudly_day"
-  },
-  {
-    "date": "28/03",
-    "weekday": "Dom",
-    "max": 30,
-    "min": 18,
-    "description": "Tempestades",
-    "condition": "storm"
-  },
-  {
-    "date": "29/03",
-    "weekday": "Seg",
-    "max": 28,
-    "min": 19,
-    "description": "Tempestades",
-    "condition": "storm"
-  },
-  {
-    "date": "30/03",
-    "weekday": "Ter",
-    "max": 27,
-    "min": 17,
-    "description": "Tempestades",
-    "condition": "storm"
-  },
-  {
-    "date": "31/03",
-    "weekday": "Qua",
-    "max": 20,
-    "min": 16,
-    "description": "Tempestades isoladas",
-    "condition": "storm"
-  },
-  {
-    "date": "01/04",
-    "weekday": "Qui",
-    "max": 20,
-    "min": 15,
-    "description": "Parcialmente nublado",
-    "condition": "cloudly_day"
-  },
-  {
-    "date": "02/04",
-    "weekday": "Sex",
-    "max": 21,
-    "min": 15,
-    "description": "Parcialmente nublado",
-    "condition": "cloudly_day"
-  },
-  {
-    "date": "03/04",
-    "weekday": "Sáb",
-    "max": 21,
-    "min": 14,
-    "description": "Parcialmente nublado",
-    "condition": "cloudly_day"
-  }
-];
+import api, { key } from '../../services/api';
 
 export default function Home(){
+  const [errorMsg, setErrorMsg] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [weather, setWeather] = useState([]);
+  const [icon, setIcon] = useState({ name: 'cloud', color: '#FFF' });
+  const [background, setBackground] = useState(['#1ed6ff', '#97c1ff']);
+
+    useEffect(()=>{
+      
+      (async ()=>{
+        let { status } = await Location.requestPermissionsAsync();
+        
+        if(status !== 'granted'){
+          setErrorMsg('Permission denied to access location');
+          setLoading(false);
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+      
+        const response = await api.get(`/weather?key=${key}&lat=${location.coords.latitude}&lon=${location.coords.longitude}`)
+
+        setWeather(response.data);
+        
+        if(response.data.results.currently === 'noite'){
+          setBackground(['#0c3741', '#0f2f61'])
+        }
+
+        switch(response.data.results.condition_slug){
+          case 'clear_day':
+            setIcon({ name: 'partly-sunny', color: '#FFB300' });
+            break;
+          case 'rain':
+            setIcon({ name: 'rainy', color: '#FFF' });
+            break;
+          case 'storm':
+            setIcon({ name: 'rainy', color: '#FFF' });
+            break;
+        }
+        
+        setLoading(false);
+
+      })();
+
+    }, [])
+
+    if(loading){
+      return(
+        <View style={styles.container}>
+          <Text style={{ fontSize: 17, fontStyle: 'italic' }}>Carregando dados...</Text>
+        </View>
+      )
+    }
+
     return(
       <SafeAreaView style={styles.container}>
 
           <Menu/>
 
-          <Header/>
+          <Header background={background} weather={weather} icon={icon} />
 
-          <Conditions/>
+          <Conditions weather={weather} />
 
           <FlatList
+            showsHorizontalScrollIndicator={false}
             horizontal={true}
             contentContainerStyle={{ paddingBottom: '5%' }}
             style={styles.list}
-            data={mylist}
+            data={weather.results.forecast}
             keyExtractor={ item => item.date }
             renderItem={ ({ item }) => <Forecast data={item}/> }
           />
