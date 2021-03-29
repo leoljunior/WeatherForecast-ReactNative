@@ -18,7 +18,7 @@ export default function Search(){
     const [error, setError] = useState(null);
 
     async function handleSearch(){
-       const response = await api.get(`/weather?key=${key}&city_name=${input}`) 
+       const response = await api.get(`/weather?key=${key}&city_name=${input}`); 
 
        if(response.data.by === 'default'){
            setError('Cidade não encontrada!');
@@ -97,7 +97,7 @@ export default function Search(){
                 placeholder="Ex: Pouso Alegre, MG"
                 style={styles.input}
                 />
-                <TouchableOpacity style={styles.icon} onPress={handleSearch}>
+                <TouchableOpacity style={styles.icon} onPress={handleSearch} >
                     <Feather
                     name="search"
                     size={22}
